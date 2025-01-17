@@ -1,9 +1,10 @@
 from utils.accountant import *
 from utils.admin import *
 from utils.lecturer import *
+from utils.login import login, register_user, handle_role
 from utils.registrar import *
 from utils.utility import *
-from utils.login import login, register_user, handle_role
+from utils.student import *
 
 
 def display_menu(menu_options):
@@ -136,6 +137,38 @@ def registrar_menu():
 
     handle_menu(menu_options, actions, "Logging out from Registrar Menu...")
 
+def student_menu():
+    while True:
+        print("\nUniversity Management System - Student Role")
+        print("1. View Available Modules")
+        print("2. Enrol in Module")
+        print("3. Unenroll from Module")
+        print("4. View Attendance")
+        print("5. View Grades")
+        print("6. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            view_available_modules()
+        elif choice == '2':
+            student_id = input("Enter your student ID: ")
+            module_id = input("Enter the module ID you want to enroll in: ")
+            add_student_module(module_id, student_id)
+        elif choice == '3':
+            student_id = input("Enter your student ID: ")
+            module_id = input("Enter the module name you want to unenroll from: ")
+            unenroll_from_module(student_id, module_id)
+        elif choice == '4':
+            print("View Attendance...")
+            view_attendance()
+        elif choice == '5':
+            print("Viewing Grades...")
+            view_grades()
+        elif choice == '6':
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
 
 def staff_menu(user_file="user_data.txt"):
     """
@@ -205,6 +238,7 @@ def guest_menu():
         "View General Information",
         "Register as a Student",
         "Access Staff Menu (Password Required)",
+        "Student Menu",
         "Exit"
     ]
 
@@ -226,6 +260,9 @@ def guest_menu():
             else:
                 print("Invalid password. Access denied.")
         elif choice == "4":
+            print("Redirecting to Student Menu")
+            student_menu()
+        elif choice == "5":
             print("Exiting the system. Goodbye!")
             break
         else:

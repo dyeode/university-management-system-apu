@@ -1,22 +1,30 @@
 def encrypt(password, shift=3):
     """
-    Encrypts a given password using a Caesar cipher with a given shift.
-    :param password: The plain text password to encrypt.
-    :param shift: The shift value for the Caesar cipher.
-    :return: The encrypted password.
+    Encrypts a password using a Caesar cipher-like encryption technique. Each character
+    in the password is shifted by a specified value, wrapping around within the range of
+    valid character codes.
+    Parameters:
+    password (str): The input password string to be encrypted.
+    shift (int): The number of positions to shift each character in the password. Defaults
+    to 3.
     """
     encrypted = "".join(chr((ord(char) + shift) % 256) for char in password)
     return encrypted
 
 
 def handle_role(role):
+    """
+    Handles user role and redirects to the appropriate role menu interface.
+    This function processes an input role, normalizes the format, and calls the
+    corresponding role-specific menu function. If the role is not valid, it
+    prints an error message stating there is no menu for the specified role.
+    Parameters:
+    role (str): The role to be processed and directed to the corresponding
+    menu function. The role string is expected to match corresponding
+    cases after standardizing its format.
+    """
     from utils.menu import (admin_menu, lecturer_menu,
                             registrar_menu, accountant_menu)
-    """
-    Handles actions based on the user role.
-    :param role: The role of the user (Admin, Lecturer, etc.).
-    """
-    # Normalize role capitalization
     role = role.strip().capitalize()
     if role == "Admin":
         print("Accessing Admin Menu.")
@@ -35,7 +43,16 @@ def handle_role(role):
     else:
         print(f"Invalid role: {role}. No menu available.")
 
+
 def register_user(user_file="user_data.txt"):
+    """
+    This interface registers a new user by storing his credentials and role in the system. Validates user details
+    for unique usernames, password matching, and proper role selection. Handles special
+    Test cases to register admin users by requiring a valid admin access code.
+    Parameters:
+    user_file (str):
+    The name of the file where user credentials are stored. Defaults to "user_data.txt".
+    """
     valid_roles = ["Student", "Lecturer", "Accountant", "Admin", "Registrar"]
     try:
         with open(user_file, "r", encoding="utf-8") as file:
@@ -64,27 +81,27 @@ def register_user(user_file="user_data.txt"):
     users.append([username, encrypted_password, role])
 
     if role == "Admin":
-        # Require an admin access code for admin role registration
         admin_access_code = "1234"
         entered_code = input("Enter the admin access code to register as admin: ").strip()
         if entered_code != admin_access_code:
             print("Invalid access code. You cannot register as an admin.")
             return
 
-    # Save the user details to the user_data file
     with open(user_file, "w", encoding="utf-8") as file:
         for user in users:
             file.write(",".join(user) + "\n")
     print(f"User '{username}' registered successfully as {role}.")
 
+
 def login(user_file="user_data.txt"):
+    """
+    Logs a user in with a check against stored user data via their username and password.
+    It reads the user data from a specified file. Passwords are encrypted for security.
+    It returns the role of the authenticated user in case of a match.
+    Parameters:
+    user_file (str): The file path for the user data file. Defaults to "user_data.txt".
+    """
     from utils.filehandling import log_message
-    """
-    Handles user login by verifying credentials against a user data file.
-    :param user_file: Path to the user data file.
-    :return: The role of the logged-in user if successful, or None if login fails.
-    """
-    # Load current users
     try:
         with open(user_file, "r", encoding="utf-8") as file:
             users = [line.strip().split(",") for line in file if line.strip()]
@@ -93,14 +110,11 @@ def login(user_file="user_data.txt"):
         log_message(f"Error: User data file '{user_file}' not found. Please register first.")
         return None
 
-    # Prompt for credentials
     entered_username = input("Enter your username: ").strip()
     entered_password = input("Enter your password: ").strip()
 
-    # Encrypt the entered password for comparison
     encrypted_entered_password = encrypt(entered_password)
 
-    # Check for matching username and password
     for user in users:
         stored_username, stored_password, stored_role = user
         if entered_username == stored_username and encrypted_entered_password == stored_password:
@@ -113,9 +127,11 @@ def login(user_file="user_data.txt"):
 
 def load_user_data(file_path):
     """
-    Loads user data from a file.
-    :param file_path: Path to the user data file.
-    :return: A list of user data (each entry as [username, password, role]).
+    The function load_user_data reads user data from a file, processes it line by line, and
+    returns a list of lists containing user data entries split by commas. In case the file
+    if it is not found, an empty list is returned instead of raising an error.
+    Parameters:
+    file_path (str): The path to the input file containing user data.
     """
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -126,10 +142,13 @@ def load_user_data(file_path):
 
 def save_user_data(users, file_path):
     """
-    Saves user data to a file.
-    :param users: A list of user data (each entry as a dictionary with keys: username, password, role).
-    :param file_path: Path to the user data file.
+    The user data should be provided as a list of lists, where each inner list contains
+    the username, password, and role.
+    Parameters:
+    users (list): A list of user data, where each user is represented as [username, password, role].
+    file_path (str): The file path where the user data will be saved.
     """
     with open(file_path, "w", encoding="utf-8") as file:
         for user in users:
-            file.write(f"{user['username']},{user['password']},{user['role']}\n")
+            # Write each user's data as a comma-separated line
+            file.write(",".join(user) + "\n")

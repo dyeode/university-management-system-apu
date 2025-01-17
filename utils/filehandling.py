@@ -7,6 +7,7 @@ def read_file(file_path):
     except Exception as e:
         raise RuntimeError(f"An error occurred while reading the file: {e}") from e
 
+
 def overwrite_file(file_path, lines):
     try:
         with open(file_path, "w", encoding="utf-8") as file:
@@ -15,6 +16,7 @@ def overwrite_file(file_path, lines):
     except Exception as e:
         print(f"An error occurred while overwriting the file: {e}")
         log_message(f"Error overwriting file '{file_path}': {e}")
+
 
 def append_to_file(file_path, data):
     try:
@@ -27,6 +29,7 @@ def append_to_file(file_path, data):
     except Exception as e:
         print(f"An error occurred while appending to the file: {e}")
         log_message(f"Error appending to file '{file_path}': {e}")
+
 
 def log_message(message, log_file="filehandling_log.txt"):
     from datetime import datetime

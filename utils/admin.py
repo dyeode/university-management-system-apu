@@ -1,5 +1,6 @@
 from utils.filehandling import read_file, overwrite_file, append_to_file, log_message
 
+
 def get_module_initials(module_name):
     return ''.join(word[0].upper() for word in module_name.split())
 
@@ -9,8 +10,10 @@ def get_lecturer_initials(lecturer_name):
 
 
 def generate_unique_id(base_value):
-    seed = (base_value * 1234) % 10000  # Simple deterministic pseudo-random value
-    return str(seed).zfill(4)  # Ensure the ID is at least 4 digits long
+    seed = (base_value * 1234) % 10000
+    # Ensure the ID is at least 4 digits long
+    return str(seed).zfill(4)
+
 
 def get_current_record_count(file_path):
     try:
@@ -19,7 +22,14 @@ def get_current_record_count(file_path):
     except FileNotFoundError:
         return 0
 
+
 def generate_module_id(module_name, lecturer_name, base_value):
+    """
+    Creates a unique module identifier, based on the module name and lecturer name,
+    and a base value. The module identifier consists of a prefix resulting from the
+    module name, base value from which a unique ID will be created and initials for both
+    the module and the lecturer.
+    """
     prefix = module_name[:2].upper()
     unique_id = generate_unique_id(base_value)
     module_id = f"{prefix}{unique_id}"
@@ -27,10 +37,20 @@ def generate_module_id(module_name, lecturer_name, base_value):
     lecturer_initials = get_lecturer_initials(lecturer_name)
     return f"{module_id}-{module_initials}-{lecturer_initials}"
 
+
 def validate_credits(credits):
     return credits.isdigit()
 
+
 def create_module(file_path="modules_list.txt"):
+    """
+    This function creates a module by taking user input and appends its details into a file.
+
+    Also allows the user to input the details of a module including its name,
+    lecturer information, credits, and the number of classes needed.
+
+    It checks for valid inputs & generates a unique module ID, and appends the data to the specified file.
+    """
     try:
         module_name = input("Enter the Module Name: ").strip()
         if not module_name:
@@ -62,16 +82,33 @@ def create_module(file_path="modules_list.txt"):
     except Exception as e:
         print(f"An error occurred while creating the module: {e}")
 
+
 def get_course_details():
+    """
+    Prompts the user to input details for a new course and generates a unique course ID.
+    The course code is generated using the initials of the course name.
+    A unique ID is created by hashing the course name and appending a random value.
+    """
     name = input("Enter the course name: ").strip()
     details = input("Enter course details: ").strip()
     uni_initials = input("Enter university initials: ").strip()
+
+    # Generate the course code from the initials of the course name
     course_code = "".join(word[0].upper() for word in name.split())
+
+    # Generate a unique ID seed using the sum of ASCII values of characters in the name
     id_seed = sum(ord(char) for char in name) * len(name)
+
+    # Calculate a pseudo-random three-digit ID
     random_id = (id_seed * 73) % 1000
+
+    # Ensuring it is zero padded to three digits
     formatted_id = f"{random_id:03d}"
+
+    # Combining into a final generated code
     generated_code = f"{course_code}{formatted_id}-{uni_initials}"
     return f"{generated_code},{name},{details}\n"
+
 
 def read_file_courses():
     try:
@@ -80,14 +117,30 @@ def read_file_courses():
     except FileNotFoundError:
         return []
 
+
 def write_to_course_file(file_path, content):
+    """
+    Appends content to a file with proper formatting by adding a newline if needed.
+    If the file is not empty, a newline character is added before appending the content.
+    The appended content does not have leading or trailing spaces.
+    """
     with open(file_path, "a") as file:
+        # Move the file pointer to the end to check the file size
         file.seek(0, 2)
+
+        # If the file is not empty, add a newline before appending the content
         if file.tell() > 0:
             file.write("\n")
+
+        # Write the stripped content to the file
         file.write(content.strip())
 
+
 def read_and_clean_file(file_path):
+    """
+    Helper function to read the contents of a file, and removes empty lines and leading whitespace,
+    and writes the cleaned content back to the file.
+    """
     with open(file_path, "r") as file:
         lines = [line.strip() for line in file if line.strip()]
     with open(file_path, "w") as file:
@@ -95,23 +148,35 @@ def read_and_clean_file(file_path):
             file.write(line + "\n")
     return lines
 
+
 def add_course(file_path="courses.txt", log_file="admin_log.txt"):
+    """
+    Adds a new course to the course file after cleaning the file and validating the input.
+    """
     try:
+        # Clean the file to remove empty lines
         read_and_clean_file(file_path)
+
+        # Get new course details from the user
         course_data = get_course_details().strip()
+
+        # Append the new course to the file
         append_to_file(file_path, course_data)
+
         print("Course added successfully.")
         input("Press Enter to continue...")
         log_message("Course added successfully.", log_file)
-    except KeyboardInterrupt:
-        print("Course addition cancelled.")
-        log_message("Course addition cancelled.", log_file)
     except Exception as e:
         error_message = f"An error occurred while adding the course: {e}"
         print(error_message)
         log_message(error_message, log_file)
 
+
 def display_courses(file_path):
+    """
+    Reads and displays a list of courses from the specified file.
+    If the file does not exist, an error message is displayed, and an empty list is returned.
+    """
     try:
         courses = read_file(file_path)
     except FileNotFoundError:
@@ -119,7 +184,10 @@ def display_courses(file_path):
         return []
     print("Available Courses:")
     for course in courses:
-        split_course = course.split(",", 1)  # Split course into ID and name, only once
+        # Split each course into ID and name using the first comma
+        split_course = course.split(",", 1)
+
+        # Validate the line has exactly two fields
         if len(split_course) == 2:
             course_id, course_name = split_course
             print(f"ID: {course_id}, Name: {course_name}")
@@ -127,14 +195,23 @@ def display_courses(file_path):
             print(f"Invalid entry: {course}")
     return courses
 
+
 def find_course(courses, identifier):
+    """
+    Helper function to find the specified course by input.
+    """
     matching_courses = []
     for course in courses:
         if identifier in course:
             matching_courses.append(course)
     return matching_courses
 
+
 def remove_course(file_path="courses.txt", log_file="admin_log.txt"):
+    """
+    Removes the specified course from the specified file.
+    If the file does not exist, an error message is displayed, and an empty list is returned.
+    """
     try:
         courses = display_courses(file_path)
         if not courses:
@@ -176,26 +253,35 @@ def remove_course(file_path="courses.txt", log_file="admin_log.txt"):
         print(f"An error occurred: {e}")
         log_message(f"Unexpected error: {e}", log_file)
 
+
 def update_course(file_path="courses.txt", log_file="admin_log.txt"):
+    """
+    Updates the name or details of an existing course in the specified file.
+    """
     try:
         courses = read_file(file_path)
         course_code = input("Enter the course code to update: ").strip()
+
         if not course_code:
             print("Invalid course code. Operation cancelled.")
             log_message("Invalid course update attempt (empty course code).", log_file)
             return
+
         updated_courses = []
         course_found = False
+
+        # Iterating through each course in the file
         for course in courses:
             split_course = course.split(",", 2)
             if len(split_course) < 3:
                 updated_courses.append(course)
                 continue
             current_code, current_name, current_details = split_course
+
+            # If the course code matches, prompt for updates
             if current_code == course_code:
                 course_found = True
-                print(
-                    f"Current Course Data: Code: {current_code}, Name: {current_name}, Details: {current_details.strip()}")
+                print(f"Current Course Data: Code: {current_code}, Name: {current_name}, Details: {current_details.strip()}")
                 new_name = input("Enter the updated course name (or press Enter to keep unchanged): ").strip()
                 new_details = input("Enter the updated course details (or press Enter to keep unchanged): ").strip()
                 updated_name = new_name if new_name else current_name
@@ -221,7 +307,11 @@ def update_course(file_path="courses.txt", log_file="admin_log.txt"):
         print(f"An error occurred while updating the course: {e}")
         log_message(f"Error updating course: {e}", log_file)
 
+
 def read_courses(file_path="courses.txt", log_file="admin_log.txt"):
+    """
+    Helper function that reads the course file and returns a list of courses.
+    """
     try:
         courses = read_file(file_path)
         valid_courses = [course.strip() for course in courses if ',' in course]
@@ -233,7 +323,11 @@ def read_courses(file_path="courses.txt", log_file="admin_log.txt"):
         log_message(f"File '{file_path}' not found.", log_file)
         return []
 
+
 def read_modules(file_path="modules_list.txt", log_file="admin_log.txt"):
+    """
+    Helper function that reads the modules file and returns a list of modules.
+    """
     try:
         modules = read_file(file_path)
         valid_modules = [module.strip() for module in modules if len(module.split(",")) >= 3]
@@ -245,10 +339,15 @@ def read_modules(file_path="modules_list.txt", log_file="admin_log.txt"):
         log_message(f"File '{file_path}' not found.", log_file)
         return []
 
+
 def validate_course(course, courses):
     return any(course_record.split(",")[0] == course for course_record in courses)
 
+
 def validate_modules(modules_input, modules, log_file="admin_log.txt"):
+    """
+    Helper function that validates the modules file and returns a list of modules.
+    """
     try:
         valid_module_ids = [module.split(",")[0] for module in modules if len(module.split(",")) >= 1]
         valid_modules = [module for module in modules_input if module in valid_module_ids]
@@ -261,12 +360,17 @@ def validate_modules(modules_input, modules, log_file="admin_log.txt"):
         log_message(f"Error occurred while validating modules: {e}", log_file)
         return [], modules_input
 
+
 def log_error_and_exit(message, log_file="admin_log.txt"):
     print(message)
     log_message(message, log_file)
 
+
 def add_student(file_path="student_records.txt", courses_file="courses.txt", modules_file="modules_list.txt",
                 log_file="admin_log.txt"):
+    """
+    Helper function that adds a student record to a file.
+    """
     try:
         courses = read_courses(courses_file, log_file)
         modules = read_modules(modules_file, log_file)
@@ -303,9 +407,16 @@ def add_student(file_path="student_records.txt", courses_file="courses.txt", mod
 
         # Correcting the append_to_file by ensuring newline format
         with open(file_path, "a", encoding="utf-8") as file:
-            file.seek(0, 2)  # Move the pointer to the end of the file
-            if file.tell() > 0:  # Check if the file already has content
-                file.write("\n")  # Add a newline if not present before appending new data
+
+            # Move the pointer to the end of the file
+            file.seek(0, 2)
+
+            # Check if the file already has content
+            if file.tell() > 0:
+
+                # Add a newline if not present before appending new data
+                file.write("\n")
+
             file.write(student_data)
 
         success_message = f"{name} added successfully to {file_path} with ID: {student_id}."
@@ -317,11 +428,18 @@ def add_student(file_path="student_records.txt", courses_file="courses.txt", mod
     except Exception as e:
         log_error_and_exit(f"Add student: An error occurred while adding the {name}: {e}")
 
+
 def get_input(prompt):
     return input(prompt).strip()
 
+
 def generate_student_id(name):
+    """
+    Function to generate a student ID,
+    Since importing random is not possible, this function will generate a random ID.
+    """
     return abs(hash(name)) % 1000000
+
 
 def filter_records(records, identifier):
     # Check if the identifier is present in each record
@@ -359,11 +477,13 @@ def remove_student(file_path="student_records.txt", log_file="admin_log.txt"):
         print(error_message)
         log_message(error_message, log_file)
 
+
 def print_report(total_courses, total_students):
     print("\n--- University Report ---")
     print(f"Total Courses: {total_courses}")
     print(f"Total Students: {total_students}")
     print("--------------------------")
+
 
 def generate_report(course_file_path="courses.txt", student_file_path="student_records.txt", log_file="admin_log.txt"):
     try:
@@ -372,24 +492,29 @@ def generate_report(course_file_path="courses.txt", student_file_path="student_r
         print_report(total_courses, total_students)
         input("Press Enter to continue...")
         log_message("Report generated successfully.", log_file)
+
     except Exception as error:
         print(f"An error occurred while generating the report: {error}")
         input("Press Enter to continue...")
         log_message(f"Error generating report: {error}", log_file)
 
+
 def student_statistics(file_path="student_records.txt"):
     students = read_file(file_path)
     students = [student.strip() for student in students if student.strip()]
     print(f"Total Students: {len(students)}")
+
     courses = []
     for student in students:
         parts = student.split(",")
         if len(parts) > 2:
             courses.append(parts[2])
+
     unique_courses = set(courses)
     for course in unique_courses:
         print(f"{course}: {courses.count(course)} student(s)")
         input("Press Enter to continue...")
+
 
 if __name__ == "__main__":
     print("Admin module loaded.")

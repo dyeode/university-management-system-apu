@@ -1,26 +1,46 @@
 from datetime import datetime
+
 from utils.filehandling import read_file, overwrite_file, append_to_file, log_message
 
+
 def find_modules_by_lecturer(lecturer_id, modules_file="modules.txt"):
+    """
+    Retrieves a list of modules assigned to a specific lecturer.
+    """
     modules = []
     try:
+        # Read the file contents,
         records = read_file(modules_file)
+        # Process each record line by line,
         for record in records:
+            # Split each record into fields by comma,
             fields = record.strip().split(",")
+            # Check if the record has enough fields and the lecturer ID matches
             if len(fields) >= 5 and fields[3] == lecturer_id:
+                # Add the module name (field index 1) to the list
                 modules.append(fields[1])
     except Exception as e:
         print(f"An error occurred while searching for modules: {e}")
         log_message(f"Error searching for modules for lecturer ID {lecturer_id}: {e}")
     return modules
 
+
 def view_assigned_modules(modules_file="modules_list.txt"):
+    """
+    Displays the list of modules assigned to a specific lecturer based on their Lecturer ID.
+    """
+
+    # Prompt the user for their Lecturer ID,
     lecturer_id = input("Enter your Lecturer ID: ").strip()
+    # Validate the lecturer ID
     if not lecturer_id:
         print("Lecturer ID cannot be empty.")
         return
+
+    # Fetch the modules assigned to the given Lecturer ID
     assigned_modules = find_modules_by_lecturer(lecturer_id, modules_file)
     if assigned_modules:
+        # Displays the modules if any are found
         print(f"Modules assigned to Lecturer ID {lecturer_id}:")
         for module in assigned_modules:
             print(f"- {module}")
@@ -30,54 +50,97 @@ def view_assigned_modules(modules_file="modules_list.txt"):
         print("No modules found assigned to your Lecturer ID.")
         input("Press Enter to continue...")
 
+
 def module_exists(module_id, modules_list_file):
+    """
+    Checks if a module with the given ID exists in the specified modules list file.
+    """
+    # Read all module records from the file
     modules = read_file(modules_list_file)
+    # Check if any record's first field (module ID) matches the given module_id
     return any(module_id == record.split(",")[0] for record in modules if record.strip())
 
+
 def get_student_name(student_id, student_records_file):
+    """
+    Retrieves the name of a student based on their ID from the student records file.
+    """
+
+    # Read all student records from the file,
     student_records = read_file(student_records_file)
+
+    # Iterating through each record in the file
     for record in student_records:
         if record.strip():
             fields = record.split(",")
             if len(fields) > 1 and fields[1].strip() == student_id:
                 return fields[0].strip()
+
+    # Return None if no matching student ID is found
     return None
 
+
 def student_in_module(module_id, student_id, module_student_file):
+    """
+    Checks if a specific student is enrolled in a given module.
+    The module_student_file should contain records in CSV format.
+    Each record is expected to have at least two fields: module ID and student ID, separated by commas.
+    """
+
+    # Read all current entries from the module-student records file,
     current_entries = read_file(module_student_file)
+
+    # Check if any record matches both the module_id and student_id
     return any(f"{module_id},{student_id}" in record for record in current_entries if record.strip())
+
 
 def add_student_to_module(module_student_file="module_student_records.txt",
                           modules_list_file="modules_list.txt",
                           student_records_file="student_records.txt"):
+    """
+    Adds a student to a specified module if the module and student exist and the student is not already enrolled.
+    The module_student_file should contain records in CSV format with fields: module_id, student_id, student_name.
+    The student_records_file should contain student details with the student ID in the second field.
+    """
     try:
+        # Prompt for module and student IDs
         module_id = input("Enter the Module ID: ").strip()
         student_id = input("Enter the Student ID: ").strip()
+
+        # Check if the module exists
         if not module_exists(module_id, modules_list_file):
             print(f"Error: Module ID '{module_id}' not found in the modules list.")
             log_message(f"Failed to add {student_id} to Module '{module_id}' does not exist.")
             return
+
+        # Get the student's name using their ID
         student_name = get_student_name(student_id, student_records_file)
         if not student_name:
             print(f"Error: Student ID '{student_id}' not found in the student records.")
             log_message(f"Failed to add student: Student ID '{student_id}' does not exist.")
             return
+
+        # Check if the student is already enrolled in the module
         if student_in_module(module_id, student_id, module_student_file):
             print(f"Error: The student ID '{student_id}' is already enrolled in the module '{module_id}'.")
             log_message(
                 f"Failed to add student: Duplicate entry for Module ID '{module_id}' and Student ID '{student_id}'.")
             return
+
+        # Append the new enrollment record to the file
         append_to_file(module_student_file, f"{module_id},{student_id},{student_name}")
         print("Student added to module successfully.")
         log_message(f"Student {student_id} ({student_name}) added to module {module_id}.")
         input("Press Enter to continue...")
+
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         log_message(f"An error occurred: {str(e)}")
         input("Press Enter to continue...")
 
+
 def remove_student_from_module(module_student_file="module_student_records.txt",
-                              modules_list_file="modules_list.txt"):
+                               modules_list_file="modules_list.txt"):
     student_id = input("Enter the Student ID to remove: ").strip()
     module_id = input("Enter the Module ID: ").strip()
     if not validate_module(module_id, modules_list_file):
@@ -107,6 +170,7 @@ def remove_student_from_module(module_student_file="module_student_records.txt",
         log_message(f"Error removing {student_id} from {module_id}: {e}")
         input("Press Enter to continue...")
 
+
 def view_enrolled_students(module_student_file="module_student_records.txt"):
     module_id = input("Enter the Module ID: ").strip()
     try:
@@ -123,6 +187,7 @@ def view_enrolled_students(module_student_file="module_student_records.txt"):
     except Exception as e:
         print(f"An error occurred while viewing enrolled students: {e}")
         log_message(f"Error viewing enrolled students: {e}")
+
 
 def give_attendance(attendance_file="attendance_records.txt",
                     modules_list_file="modules_list.txt",
@@ -169,6 +234,8 @@ def give_attendance(attendance_file="attendance_records.txt",
     except Exception as error:  # Catch and log unexpected errors
         print(f"An error occurred while recording attendance: {error}")
         log_message(f"Error recording attendance: {error}")
+
+
 def parse_and_validate_record(record, module_id, min_fields):
     """This pretty much parses and validates a single record,
     I found this on closed thread in stackoverflow."""
@@ -176,6 +243,7 @@ def parse_and_validate_record(record, module_id, min_fields):
     if len(fields) < min_fields:
         raise ValueError(f"Invalid record format: {record}")
     return fields if fields[0].strip() == module_id else None
+
 
 def validate_student(student_id, student_records_file="student_records.txt"):
     """Check if student_id exists in student_records.txt."""
@@ -358,6 +426,7 @@ def view_grades(grades_file="grades_records.txt"):
     except Exception as e:
         print(f"An unexpected error occurred while viewing grades: {e}")
         log_message(f"Unexpected error viewing grades: {e}")
+
 
 if __name__ == "__main__":
     print("Lecturer module loaded.")

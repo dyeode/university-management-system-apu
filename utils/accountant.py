@@ -1,17 +1,29 @@
 from datetime import datetime
+
 from utils.filehandling import append_to_file, read_file, overwrite_file, log_message
 from utils.utility import get_valid_student_id
 
+
 def calculate_total_from_records(file_path, record_type, log_file_path):
+    """
+    Calculates the total amount from a records file.
+    Records with invalid formats or non-numeric amounts are logged and skipped.
+    """
+
+    # Initializing the total amount at start
     total_amount = 0.0
     try:
         with open(file_path, "r") as file:
             for line in file:
+                # Remove leading/trailing whitespace
                 line = line.strip()
                 if line:
                     split_record = line.split(",", maxsplit=3 if record_type == "paid" else 2)
+
+                    # Ensure the record has at least two fields
                     if len(split_record) >= 2:
                         try:
+                            # Add the amount to the total
                             total_amount += float(split_record[1])
                         except ValueError:
                             log_message(f"Invalid {record_type} amount skipped: {line}", log_file_path)
@@ -21,6 +33,7 @@ def calculate_total_from_records(file_path, record_type, log_file_path):
         log_message(f"File not found: {file_path}. Unable to process {record_type} records.", log_file_path)
     return total_amount
 
+
 def display_financial_summary_details(total_paid, total_outstanding):
     print("\nFinancial Summary:\n" + "-" * 50)
     print(f"Total Fees Collected: {total_paid:.2f}")
@@ -28,22 +41,34 @@ def display_financial_summary_details(total_paid, total_outstanding):
     print("-" * 50)
     input("Press Enter to continue...")
 
+
 def view_financial_summary(pending_file_path="tuition_fees_pending.txt",
                            paid_file_path="tuition_fees_paid.txt",
                            log_file_path="accountant_log.txt"):
+    """
+    Displays a financial summary of total fees collected and outstanding.
+    """
     try:
+        # Calculates the total fees collected from the paid file
         total_paid = calculate_total_from_records(paid_file_path, "paid", log_file_path)
+
+        # Calculates total outstanding fees from the pending file
         total_outstanding = calculate_total_from_records(pending_file_path, "pending", log_file_path)
+
+        # Displays the financial summary to the user
         display_financial_summary_details(total_paid, total_outstanding)
         log_message(f"Financial Summary: Collected - {total_paid:.2f}, "
-                    f"Outstanding - {total_outstanding:.2f}, "
-                    f"Total - {total_paid + total_outstanding:.2f}", log_file_path)
+                    f"Outstanding - {total_outstanding:.2f}, ", log_file_path)
     except Exception as e:
         print(f"Error: An unexpected issue occurred: {e}")
         log_message(f"Unexpected error in view_financial_summary: {e}", log_file_path)
 
+
 def generate_receipt(student_id, amount_paid, date_of_payment, receipt_file="fee_receipts.txt",
                      log_file="accountant_log.txt"):
+    """
+    Generates the receipt for the given student ID using the given amount and date of payment.
+    """
     receipt_entry = f"{student_id},{amount_paid},{date_of_payment}\n"
     try:
         append_to_file(receipt_file, receipt_entry)
@@ -54,6 +79,7 @@ def generate_receipt(student_id, amount_paid, date_of_payment, receipt_file="fee
         print(f"Failed to generate receipt: {e}")
         input("Press Enter to continue...")
         log_message(f"Receipt generation failed for student {student_id}: {e}", log_file)
+
 
 def get_valid_amount_paid():
     """Prompt for and validate the amount paid."""
@@ -67,6 +93,7 @@ def get_valid_amount_paid():
         except ValueError:
             print("Invalid input. Please enter a numeric value.")
 
+
 def prompt_user_for_action():
     print("Do you want to 1) Add student to pending record or 2) Mark student as paid?")
     choice = input("Enter your choice (1/2): ").strip()
@@ -74,6 +101,7 @@ def prompt_user_for_action():
         print("Invalid choice. Please restart and enter either 1 or 2.")
         return None
     return choice
+
 
 def remove_empty_lines(file_path, log_file_path):
     """Removes empty lines from a given file."""
@@ -92,6 +120,7 @@ def remove_empty_lines(file_path, log_file_path):
     except Exception as e:
         log_message(f"Unexpected error while removing empty lines from {file_path}: {e}", log_file_path)
 
+
 def add_student_to_pending_record(student_id, pending_file, log_file):
     """Add a student's pending fees record and ensure no empty lines in the pending file."""
     pending_amount = get_valid_amount_paid()
@@ -107,6 +136,7 @@ def add_student_to_pending_record(student_id, pending_file, log_file):
     # Notify and log the operation
     print(f"Student {student_id} added to pending tuition fees record.")
     log_message(f"Student {student_id} added to pending record.", log_file)
+
 
 def process_pending_to_paid(student_id, pending_file, paid_file, log_file):
     updated_amount = get_valid_amount_paid()
@@ -143,6 +173,8 @@ def process_pending_to_paid(student_id, pending_file, paid_file, log_file):
 
     # Generate a receipt for the transaction
     generate_receipt(student_id, updated_amount, date_of_update, log_file=log_file)
+
+
 def handle_file_access_error(error, log_file):
     print(f"An error occurred while accessing files: {error}")
     log_message(f"File error: {error}", log_file)
@@ -176,6 +208,7 @@ def record_tuition_fees_to_file(pending_file="tuition_fees_pending.txt",
         handle_file_access_error(e, log_file)
     except Exception as e:
         handle_unexpected_program_error(e, log_file)
+
 
 def view_outstanding_fees(pending_file_path="tuition_fees_pending.txt", log_file_path="accountant_log.txt"):
     try:
@@ -239,6 +272,7 @@ def view_outstanding_fees(pending_file_path="tuition_fees_pending.txt", log_file
     except Exception as e:
         print(f"Error: An unexpected issue occurred: {e}")
         log_message(f"Unexpected error in view_outstanding_fees: {e}", log_file_path)
+
 
 if __name__ == "__main__":
     print("Accountant Module loaded.")

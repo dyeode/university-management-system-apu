@@ -1,6 +1,13 @@
 from utils.filehandling import read_file, append_to_file
 
+
 def student_registration(file_path="registrations.txt"):
+    """
+    This function facilitates the student registration process, collecting user inputs
+    such as name, email, passport number, and course applied for. It validates the input fields and,
+    if valid, appends data to a specified file. If it detects an invalid input, it raises
+    an appropriate error.
+    """
     print("Hello, this is student registration page!\n"
           "Please enter your details according to the given format:\n")
     try:
@@ -8,6 +15,7 @@ def student_registration(file_path="registrations.txt"):
         if not name:
             raise ValueError("Name cannot be empty.")
         email = input("Email: ").strip()
+        # Validates the email input by checking if it is not empty and contains "@" and ".".
         if not email or "@" not in email or "." not in email:
             raise ValueError("Invalid email format.")
         passport_number = input("Passport Number: ").strip()
@@ -25,21 +33,23 @@ def student_registration(file_path="registrations.txt"):
     input("Press Enter to continue...")
     return
 
+
 def view_registrations(file_path="registrations.txt"):
+    """
+        Reads and displays user registration details from a provided file.
+        Each entry is expected to have a four comma-separated fields.
+
+        If the file does not exist, is empty, or contains formatting issues,
+        appropriate error messages will be displayed.
+    """
     try:
-        """
-        Last time, it wasn't printing if the file was empty.
-        It's likely that read_file is returning an empty list.
-        Probably an implementation error, but I'm not sure.
-        I think it works now.
-        Update: Oh yeah, it is working #ifeelgood.
-        """
         file_contents = read_file(file_path)
-        # Check for completely empty or whitespace-only content
+        # Checks for empty or whitespace lines
         if not file_contents or all(line.strip() == "" for line in file_contents):
             print(f"Error: {file_path} is empty. No registrations to display.")
             return
-        for line in file_contents:  # Iterate directly over the list elements
+        # Iterating directly over the list elements
+        for line in file_contents:
             fields = line.strip().split(",")
             if len(fields) == 4:
                 print(f"Name: {fields[0]:<18} Email: {fields[1]:<28} Department: {fields[3]:<18}")
@@ -47,13 +57,23 @@ def view_registrations(file_path="registrations.txt"):
     except FileNotFoundError:
         print("Error: No registrations file found.")
 
+
 def process_registrations(file_path="registrations.txt"):
+    """
+    Processes student registration data from a file, allowing the registrar to
+    accept or decline each registration and perform additional actions based on the decision.
+
+    The function reads a specified file containing registration details, prompts the user for
+    input regarding registration decisions, and updates the corresponding
+    files and records accordingly.
+    """
     print("Processing registrations:")
-    view_registrations(file_path)  # Call view_registrations() to display the registrations
+    # Call view_registrations() to display the registrations
+    view_registrations(file_path)
     try:
         with open(file_path, "r") as file:
             lines = file.readlines()
-        # If the file has no lines, print an error and exit the function
+        # If the file has no lines, print an error and exit the function,
         if not lines:
             print(f"Error: {file_path} is empty. No registrations to process.")
             return
@@ -68,23 +88,23 @@ def process_registrations(file_path="registrations.txt"):
                         file_to_write = "accepted_registrations.txt" if decision == "accept" else "declined_registrations.txt"
                         append_to_file(file_to_write, line)
                         if decision == "accept":
-                            # Display accepted student information
+                            # Display the accepted student information
                             print("\nAccepted Student Information (copy this for reference):")
                             print(f"Name: {fields[0]}")
                             print(f"Email: {fields[1]}")
                             print(f"Passport Number: {fields[2]}")
                             print(f"Department: {fields[3]}\n")
-                            # Call add_student() for additional processing
+                            # Calls add_student() for additional processing
                             from utils.admin import add_student  # Import add_student
-                            """
-                            I'm scared of having a circular import error.
-                            """
                             add_student()
                         else:
+                            # Removes the student from registrations.txt
                             print(f"Student {fields[0]} has been declined.\n")
-                        # Remove the student from registrations.txt
-                        lines = [l for l in lines if l.strip() != line.strip()]  # Filter out current line
-                        with open(file_path, "w") as file:  # Overwrite the file
+
+                        # Filter out current line,
+                        lines = [l for l in lines if l.strip() != line.strip()]
+                        # Overwrites the file,
+                        with open(file_path, "w") as file:
                             file.writelines(lines)
                         break
                     else:
@@ -92,29 +112,32 @@ def process_registrations(file_path="registrations.txt"):
     except FileNotFoundError:
         print("Error: No registrations found.")
 
+
 def generate_report_accepted(file_path="accepted_registrations.txt"):
     try:
-        file_contents = read_file(file_path)  # Assuming read_file returns a list
-        print("Accepted registrations: ")
-        for line in file_contents:  # Directly iterate over each line in the list
-            fields = line.strip().split(",")
-            if len(fields) == 4:
-                print(f"Name: {fields[0]:<18} Email: {fields[1]:<28} Department: {fields[3]:<18}")
-                input("Press Enter to continue...")
-    except FileNotFoundError:
-        print("No accepted registrations found.")
-
-def generate_report_declined(file_path="declined_registrations.txt"):
-    try:
         file_contents = read_file(file_path)
-        """ 
-        Process each element in the list.
-        """
-        print("Declined registrations: ")
+        print("Accepted registrations: ")
+        # Directly iterate over each line in the list
         for line in file_contents:
             fields = line.strip().split(",")
             if len(fields) == 4:
                 print(f"Name: {fields[0]:<18} Email: {fields[1]:<28} Department: {fields[3]:<18}")
-                input("Press Enter to continue...")
+
+            input("Press Enter to continue...")
+    except FileNotFoundError:
+        print("No accepted registrations found.")
+
+
+def generate_report_declined(file_path="declined_registrations.txt"):
+    try:
+        file_contents = read_file(file_path)
+        print("Declined registrations: ")
+        # Directly iterate over each line in the list
+        for line in file_contents:
+            fields = line.strip().split(",")
+            if len(fields) == 4:
+                print(f"Name: {fields[0]:<18} Email: {fields[1]:<28} Department: {fields[3]:<18}")
+
+            input("Press Enter to continue...")
     except FileNotFoundError:
         print("No declined registrations found.")
