@@ -1,5 +1,6 @@
 from utils.filehandling import read_file
 
+
 def view_available_modules(file_path="modules_list.txt"):
     try:
         with open(file_path, "r") as file:
@@ -26,9 +27,12 @@ def view_available_modules(file_path="modules_list.txt"):
         print(f"An unexpected error occurred: {e}")
         input("Press enter to continue...")
 
-def add_student_module(module_id, student_id, modules_file="modules_list.txt",
-                          students_file="student_records.txt", records_file="module_student_records.txt"):
+
+def add_student_module(modules_file="modules_list.txt", students_file="student_records.txt",
+                       records_file="module_student_records.txt"):
     try:
+        module_id = input("Enter the module ID: ")
+        student_id = input("Enter the student ID: ")
         modules = read_file(modules_file)
         students = read_file(students_file)
         module_exists = False
@@ -60,9 +64,12 @@ def add_student_module(module_id, student_id, modules_file="modules_list.txt",
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
 
-def unenroll_from_module(student_id, module_id, file_path="module_student_records.txt"):
+
+def unenroll_from_module(file_path="module_student_records.txt"):
     """Unenroll a student from the given module."""
     try:
+        student_id = input("Enter the student ID: ")
+        module_id = input("Enter the module ID: ")
         with open(file_path, "r") as file:
             lines = file.readlines()
         updated_lines = []
@@ -89,6 +96,7 @@ def unenroll_from_module(student_id, module_id, file_path="module_student_record
         print(f"Error: File '{file_path}' not found.")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
+
 
 if __name__ == "__main__":
     print("Student Module loaded.")

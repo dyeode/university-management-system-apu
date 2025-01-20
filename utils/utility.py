@@ -147,3 +147,6 @@ def get_valid_student_id(student_records_file="student_records.txt"):
             except Exception as e:
                 print(f"An error occurred: {e}")
                 return None
+
+if __name__ == "__main__":
+    print("Utility Module loaded.")

@@ -3,7 +3,7 @@ from datetime import datetime
 from utils.filehandling import read_file, overwrite_file, append_to_file, log_message
 
 
-def find_modules_by_lecturer(lecturer_id, modules_file="modules.txt"):
+def find_modules_by_lecturer(lecturer_id, modules_file="modules_list.txt"):
     """
     Retrieves a list of modules assigned to a specific lecturer.
     """
@@ -123,8 +123,7 @@ def add_student_to_module(module_student_file="module_student_records.txt",
         # Check if the student is already enrolled in the module
         if student_in_module(module_id, student_id, module_student_file):
             print(f"Error: The student ID '{student_id}' is already enrolled in the module '{module_id}'.")
-            log_message(
-                f"Failed to add student: Duplicate entry for Module ID '{module_id}' and Student ID '{student_id}'.")
+            log_message(f"Failed to add student: Duplicate entry for Module ID '{module_id}' and Student ID '{student_id}'.")
             return
 
         # Append the new enrollment record to the file

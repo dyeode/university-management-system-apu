@@ -3,10 +3,6 @@ def encrypt(password, shift=3):
     Encrypts a password using a Caesar cipher-like encryption technique. Each character
     in the password is shifted by a specified value, wrapping around within the range of
     valid character codes.
-    Parameters:
-    password (str): The input password string to be encrypted.
-    shift (int): The number of positions to shift each character in the password. Defaults
-    to 3.
     """
     encrypted = "".join(chr((ord(char) + shift) % 256) for char in password)
     return encrypted
@@ -18,10 +14,6 @@ def handle_role(role):
     This function processes an input role, normalizes the format, and calls the
     corresponding role-specific menu function. If the role is not valid, it
     prints an error message stating there is no menu for the specified role.
-    Parameters:
-    role (str): The role to be processed and directed to the corresponding
-    menu function. The role string is expected to match corresponding
-    cases after standardizing its format.
     """
     from utils.menu import (admin_menu, lecturer_menu,
                             registrar_menu, accountant_menu)
@@ -49,9 +41,6 @@ def register_user(user_file="user_data.txt"):
     This interface registers a new user by storing his credentials and role in the system. Validates user details
     for unique usernames, password matching, and proper role selection. Handles special
     Test cases to register admin users by requiring a valid admin access code.
-    Parameters:
-    user_file (str):
-    The name of the file where user credentials are stored. Defaults to "user_data.txt".
     """
     valid_roles = ["Student", "Lecturer", "Accountant", "Admin", "Registrar"]
     try:
@@ -71,7 +60,7 @@ def register_user(user_file="user_data.txt"):
         print("Error: Passwords do not match.")
         return
 
-    print("Available roles: student, lecturer, accountant, admin")
+    print("Available roles: student, lecturer, accountant, registrar and admin")
     role = input("Enter your role: ").strip().capitalize()
     if role not in valid_roles:
         print("Invalid role. Please choose from the available roles.")
@@ -98,8 +87,6 @@ def login(user_file="user_data.txt"):
     Logs a user in with a check against stored user data via their username and password.
     It reads the user data from a specified file. Passwords are encrypted for security.
     It returns the role of the authenticated user in case of a match.
-    Parameters:
-    user_file (str): The file path for the user data file. Defaults to "user_data.txt".
     """
     from utils.filehandling import log_message
     try:
@@ -130,8 +117,6 @@ def load_user_data(file_path):
     The function load_user_data reads user data from a file, processes it line by line, and
     returns a list of lists containing user data entries split by commas. In case the file
     if it is not found, an empty list is returned instead of raising an error.
-    Parameters:
-    file_path (str): The path to the input file containing user data.
     """
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -144,9 +129,6 @@ def save_user_data(users, file_path):
     """
     The user data should be provided as a list of lists, where each inner list contains
     the username, password, and role.
-    Parameters:
-    users (list): A list of user data, where each user is represented as [username, password, role].
-    file_path (str): The file path where the user data will be saved.
     """
     with open(file_path, "w", encoding="utf-8") as file:
         for user in users:

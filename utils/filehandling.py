@@ -40,3 +40,6 @@ def log_message(message, log_file="filehandling_log.txt"):
             log.write(formatted_message + "\n")
     except Exception as e:
         print(f"An error occurred while writing to the log file: {e}")
+
+if __name__ == "__main__":
+    print("Filehandling Module loaded.")

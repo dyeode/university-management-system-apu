@@ -3,8 +3,8 @@ from utils.admin import *
 from utils.lecturer import *
 from utils.login import login, register_user, handle_role
 from utils.registrar import *
-from utils.utility import *
 from utils.student import *
+from utils.utility import *
 
 
 def display_menu(menu_options):
@@ -16,7 +16,7 @@ def display_menu(menu_options):
 def handle_menu(menu_options, actions, logout_message="Logging out..."):
     while True:
         display_menu(menu_options)
-        choice = input("Enter your choice (0 to logout): ").strip()
+        choice = input("Enter your choice: ").strip()
         if choice.isdigit():
             choice = int(choice)
             if choice == 0:
@@ -37,6 +37,7 @@ def admin_menu():
     menu_options = [
         "Add Course",
         "Remove Course",
+        "Edit course",
         "Add Student",
         "Remove Student",
         "Create Module",
@@ -50,6 +51,7 @@ def admin_menu():
     actions = [
         add_course,
         remove_course,
+        update_course,
         add_student,
         remove_student,
         create_module,
@@ -75,8 +77,7 @@ def lecturer_menu():
         "Give Attendance",
         "View Attendance",
         "Add Grades",
-        "View Grades",
-        "Logout"
+        "View Grades"
     ]
 
     actions = [
@@ -120,10 +121,11 @@ def registrar_menu():
     """
     menu_options = [
         "Register Student",
-        "Update Student Records",
-        "Manage Enrolments",
-        "Issue Transcript for Student",
-        "View Student Information",
+        "View Registration Records",
+        "Manage Registrations",
+        "Issue Transcript for Accepted",
+        "Issue Transcript for Declined",
+        "Check Registration Status",
         "Logout"
     ]
 
@@ -132,43 +134,47 @@ def registrar_menu():
         view_registrations,
         process_registrations,
         generate_report_accepted,
-        generate_report_declined
+        generate_report_declined,
+        check_student_acceptance
     ]
 
     handle_menu(menu_options, actions, "Logging out from Registrar Menu...")
 
-def student_menu():
-    while True:
-        print("\nUniversity Management System - Student Role")
-        print("1. View Available Modules")
-        print("2. Enrol in Module")
-        print("3. Unenroll from Module")
-        print("4. View Attendance")
-        print("5. View Grades")
-        print("6. Exit")
-        choice = input("Enter your choice: ")
 
-        if choice == '1':
+def student_menu():
+
+    menu_options = [
+        "View Available Modules",
+        "Enroll in Module",
+        "Unenroll in Module",
+        "View Attendance",
+        "View Grades",
+        "View Payment Receipts",
+        "Logout"
+    ]
+    while True:
+        display_menu(menu_options)
+
+        choice = input("Enter your choice: ").strip()
+
+        if choice == "1":
             view_available_modules()
-        elif choice == '2':
-            student_id = input("Enter your student ID: ")
-            module_id = input("Enter the module ID you want to enroll in: ")
-            add_student_module(module_id, student_id)
-        elif choice == '3':
-            student_id = input("Enter your student ID: ")
-            module_id = input("Enter the module name you want to unenroll from: ")
-            unenroll_from_module(student_id, module_id)
-        elif choice == '4':
-            print("View Attendance...")
+        elif choice == "2":
+            add_student_module()
+        elif choice == "3":
+            unenroll_from_module()
+        elif choice == "4":
             view_attendance()
-        elif choice == '5':
-            print("Viewing Grades...")
+        elif choice == "5":
             view_grades()
-        elif choice == '6':
+        elif choice == "6":
+            view_receipt()
+        elif choice == "7":
             print("Exiting...")
             break
         else:
-            print("Invalid choice. Please try again.")
+            print("Invalid input. Please enter a number.")
+
 
 def staff_menu(user_file="user_data.txt"):
     """
@@ -239,6 +245,7 @@ def guest_menu():
         "Register as a Student",
         "Access Staff Menu (Password Required)",
         "Student Menu",
+        "Check Application Status",
         "Exit"
     ]
 
@@ -263,6 +270,9 @@ def guest_menu():
             print("Redirecting to Student Menu")
             student_menu()
         elif choice == "5":
+            print("Redirecting to Student Application Status")
+            check_student_acceptance()
+        elif choice == "6":
             print("Exiting the system. Goodbye!")
             break
         else:

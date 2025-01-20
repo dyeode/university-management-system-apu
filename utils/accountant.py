@@ -69,9 +69,16 @@ def generate_receipt(student_id, amount_paid, date_of_payment, receipt_file="fee
     """
     Generates the receipt for the given student ID using the given amount and date of payment.
     """
-    receipt_entry = f"{student_id},{amount_paid},{date_of_payment}\n"
+    receipt_entry = f"{student_id},{amount_paid},{date_of_payment}"
     try:
-        append_to_file(receipt_file, receipt_entry)
+        # Print the receipt details in a clear format
+        print("\nReceipt Details:")
+        print(f"Student ID: {student_id}")
+        print(f"Amount Paid: ${amount_paid:.2f}")
+        print(f"Date of Payment: {date_of_payment}")
+
+        with open(receipt_file, 'a', encoding='utf-8') as file:
+            file.write(receipt_entry.strip() + "\n")
         print(f"Receipt generated and saved for student {student_id}.")
         input("Press Enter to continue...")
         log_message(f"Receipt generated for student {student_id}: {receipt_entry.strip()}", log_file)
@@ -81,11 +88,42 @@ def generate_receipt(student_id, amount_paid, date_of_payment, receipt_file="fee
         log_message(f"Receipt generation failed for student {student_id}: {e}", log_file)
 
 
+def view_receipt(receipt_file="fee_receipts.txt"):
+    """
+    Prompts the user for a student ID and displays the receipt details if available.
+    """
+    try:
+        student_id = input("Enter Student ID to view receipt: ").strip()
+        with open(receipt_file, 'r', encoding='utf-8') as file:
+            receipts = file.readlines()
+
+        print("\nReceipt Details:")
+        found = False
+        for receipt in receipts:
+            stored_id, amount_paid, date_of_payment = receipt.strip().split(',')
+            if stored_id == student_id:
+                print(f"Student ID: {stored_id}")
+                print(f"Amount Paid: MYR {float(amount_paid):.2f}")
+                print(f"Date of Payment: {date_of_payment}")
+                found = True
+                break
+
+        if not found:
+            print(f"No receipt found for student ID {student_id}.")
+        input("Press Enter to continue...")
+    except FileNotFoundError:
+        print(f"Receipt file {receipt_file} not found.")
+        input("Press Enter to continue...")
+    except Exception as e:
+        print(f"An error occurred while retrieving the receipt: {e}")
+        input("Press Enter to continue...")
+
+
 def get_valid_amount_paid():
     """Prompt for and validate the amount paid."""
     while True:
         try:
-            amount_paid = float(input("Enter the amount paid: "))
+            amount_paid = float(input("Enter the amount: "))
             if amount_paid <= 0:
                 print("Amount must be greater than zero. Please try again.")
             else:
@@ -272,7 +310,6 @@ def view_outstanding_fees(pending_file_path="tuition_fees_pending.txt", log_file
     except Exception as e:
         print(f"Error: An unexpected issue occurred: {e}")
         log_message(f"Unexpected error in view_outstanding_fees: {e}", log_file_path)
-
 
 if __name__ == "__main__":
     print("Accountant Module loaded.")

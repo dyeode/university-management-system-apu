@@ -45,7 +45,6 @@ def validate_credits(credits):
 def create_module(file_path="modules_list.txt"):
     """
     This function creates a module by taking user input and appends its details into a file.
-
     Also allows the user to input the details of a module including its name,
     lecturer information, credits, and the number of classes needed.
 
@@ -109,15 +108,6 @@ def get_course_details():
     generated_code = f"{course_code}{formatted_id}-{uni_initials}"
     return f"{generated_code},{name},{details}\n"
 
-
-def read_file_courses():
-    try:
-        with open("courses.txt", "r", encoding="utf-8") as file:
-            return file.readlines()
-    except FileNotFoundError:
-        return []
-
-
 def write_to_course_file(file_path, content):
     """
     Appends content to a file with proper formatting by adding a newline if needed.
@@ -154,6 +144,10 @@ def add_course(file_path="courses.txt", log_file="admin_log.txt"):
     Adds a new course to the course file after cleaning the file and validating the input.
     """
     try:
+        # If the file exists, open in append mode
+        with open(file_path, "a", encoding="utf-8"):
+            pass
+
         # Clean the file to remove empty lines
         read_and_clean_file(file_path)
 
@@ -281,7 +275,8 @@ def update_course(file_path="courses.txt", log_file="admin_log.txt"):
             # If the course code matches, prompt for updates
             if current_code == course_code:
                 course_found = True
-                print(f"Current Course Data: Code: {current_code}, Name: {current_name}, Details: {current_details.strip()}")
+                print(
+                    f"Current Course Data: Code: {current_code}, Name: {current_name}, Details: {current_details.strip()}")
                 new_name = input("Enter the updated course name (or press Enter to keep unchanged): ").strip()
                 new_details = input("Enter the updated course details (or press Enter to keep unchanged): ").strip()
                 updated_name = new_name if new_name else current_name
@@ -291,7 +286,7 @@ def update_course(file_path="courses.txt", log_file="admin_log.txt"):
             else:
                 updated_courses.append(course)
         if course_found:
-            overwrite_file(file_path, updated_courses)
+            overwrite_file(file_path, [f"{line.strip()}\n" for line in updated_courses])
             print("Course updated successfully.")
             log_message(f"Course with code '{course_code}' updated successfully.", log_file)
         else:
@@ -413,7 +408,6 @@ def add_student(file_path="student_records.txt", courses_file="courses.txt", mod
 
             # Check if the file already has content
             if file.tell() > 0:
-
                 # Add a newline if not present before appending new data
                 file.write("\n")
 
